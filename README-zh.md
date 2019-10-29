@@ -1,9 +1,12 @@
 # 以太坊智能合约 —— 最佳安全开发指南
 
-*本文翻译自：https://github.com/ConsenSys/smart-contract-best-practices。
+
+**Notice: this translation was generously provided by a contributor. The maintainers are not able to verify the content. Any issues or PRs to help improve it are welcome.**
+
+*本文翻译自：https://github.com/ConsenSys/smart-contract-best-practices
+
 为了使语句表达更加贴切，个别地方未按照原文逐字逐句翻译，如有出入请以原文为准。*
 
-[![Join the chat at https://gitter.im/ConsenSys/smart-contract-best-practices](https://badges.gitter.im/ConsenSys/smart-contract-best-practices.svg)](https://gitter.im/ConsenSys/smart-contract-best-practices?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 **主要章节如下**:
 
@@ -70,7 +73,7 @@
 然而，这里有几个重要的例外，它们从合约安全和传统软件工程两个角度考虑，所得到的重要性排序可能不同。当中每一条，都需要针对智能合约系统的特点找到最优的组合方式来达到平衡。
 
 - 固化 vs 可升级
-- 庞大 vs 模块化
+- 一体化 vs 模块化
 - 重复 vs 可重用
 
 #### 固化 vs 可升级
@@ -79,9 +82,9 @@
 
 延展性会增加程序复杂性和潜在的攻击面。对于那些只在特定的时间段内提供有限的功能的智能合约，简单性比复杂性显得更加高效，比如无管治功能，有限短期内使用的代币发行的智能合约系统(governance-fee,finite-time-frame token-sale contracts)。
 
-#### 庞大 vs 模块化
+#### 一体化 vs 模块化
 
-一个庞大的独立的智能合约把所有的变量和模块都放到一个合约中。尽管只有少数几个大家熟知的智能合约系统真的做到了大体量，但在将数据和流程都放到一个合约中还是享有部分优点--比如，提高代码审核(code review)效率。
+一个一体化的独立的智能合约把所有的变量和模块都放到一个合约中。尽管只有少数几个大家熟知的智能合约系统真的做到了大体量，但在将数据和流程都放到一个合约中还是享有部分优点--比如，提高代码审核(code review)效率。
 
 和在这里讨论的其他权衡点一样，传统软件开发策略和从合约安全角度出发考虑，两者不同主要在对于简单、短生命周期的智能合约；对于更复杂、长生命周期的智能合约，两者策略理念基本相同。
 
@@ -259,7 +262,7 @@ contract Token {
     function deposit() public payable {
         balanceOf[msg.sender] += msg.value;
         totalSupply += msg.value;
-        assert(this.balance >= totalSupply);
+        assert(address(this).balance >= totalSupply);
     }
 }
 ```
@@ -408,7 +411,7 @@ function transfer() external {}
 
 ### 使用Solidity更新的构造器
 
-更合适的构造器/别名，如`selfdestruct`（旧版本为'suicide`）和`keccak256`（旧版本为`sha3`）。 像`require(msg.sender.send(1 ether))``的模式也可以简化为使用`transfer()`，如`msg.sender.transfer(1 ether)`。
+更合适的构造器/别名，如`selfdestruct`（旧版本为`suicide`）和`keccak256`（旧版本为`sha3`）。 像`require(msg.sender.send(1 ether))`的模式也可以简化为使用`transfer()`，如`msg.sender.transfer(1 ether)`。
 
 <a name="known-attacks"></a>
 
@@ -418,7 +421,7 @@ function transfer() external {}
 
 ### 竞态<sup><a href='#footnote-race-condition-terminology'>\*</a></sup>
 
-调用外部契约的主要危险之一是它们可以接管控制流，并对调用函数意料之外的数据进行更改。 这类bug有多种形式，导致DAO崩溃的两个主要错误都是这种错误。
+调用外部合约的主要危险之一是它们可以接管控制流，并对调用函数意料之外的数据进行更改。 这类bug有多种形式，导致DAO崩溃的两个主要错误都是这种错误。
 
 <a name="reentrancy"></a>
 
@@ -436,7 +439,7 @@ function withdrawBalance() public {
     userBalances[msg.sender] = 0;
 }
 ```
-（*译者注：使用msg.sender.call.value()()）传递给fallback函数可用的气是当前剩余的所有气，在这里，假如从你账户执行提现操作的恶意合约的fallback函数内递归调用你的withdrawBalance()便可以从你的账户转走更多的币。*）
+（*译者注：使用msg.sender.call.value()()）传递给fallback函数可用的gas是当前剩余的所有gas，在这里，假如从你账户执行提现操作的恶意合约的fallback函数内递归调用你的withdrawBalance()便可以从你的账户转走更多的币。*）
 
 可以看到当调msg.sender.call.value()()时，并没有将userBalances[msg.sender] 清零，于是在这之前可以成功递归调用很多次withdrawBalance()函数。 一个非常相像的bug便是出现在针对 DAO 的攻击。
 
